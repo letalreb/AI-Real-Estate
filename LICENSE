@@ -1,0 +1,49 @@
+MIT License
+
+Copyright (c) 2025 AI Real Estate Auction Analyzer Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+ADDITIONAL TERMS FOR DATA SCRAPING COMPONENTS:
+
+This license applies to the software code only. Data scraped from third-party
+websites remains the property of those websites and their respective owners.
+
+When using the scraping components of this software:
+
+1. You must comply with the robots.txt file and Terms of Service of all
+   target websites.
+
+2. You must not use the software to collect personal data or violate privacy
+   rights.
+
+3. You must implement appropriate rate limiting to avoid overwhelming target
+   servers.
+
+4. You accept full responsibility for ensuring your use complies with all
+   applicable laws and regulations, including but not limited to GDPR, CCPA,
+   and local data protection laws.
+
+5. The authors and contributors of this software are not responsible for any
+   misuse of the scraping components or any legal consequences thereof.
+
+See LEGAL.md for detailed information about responsible use and legal
+compliance.
