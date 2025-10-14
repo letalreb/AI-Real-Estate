@@ -72,8 +72,8 @@ def upgrade():
     op.create_index(op.f('ix_auctions_ai_score'), 'auctions', ['ai_score'], unique=False)
     op.create_index(op.f('ix_auctions_auction_date'), 'auctions', ['auction_date'], unique=False)
     
-    # Create spatial index on coordinates
-    op.execute('CREATE INDEX idx_auctions_coordinates ON auctions USING GIST (coordinates)')
+    # Create spatial index on coordinates (idempotent)
+    op.execute('CREATE INDEX IF NOT EXISTS idx_auctions_coordinates ON auctions USING GIST (coordinates)')
     
     # Create search_preferences table
     op.create_table(

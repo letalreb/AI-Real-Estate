@@ -6,6 +6,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 COPY tsconfig.json ./
+COPY tsconfig.node.json ./
+COPY vite.config.ts ./
 
 # Install dependencies
 RUN npm install
@@ -13,6 +15,7 @@ RUN npm install
 # Copy source
 COPY public ./public
 COPY src ./src
+COPY index.html ./
 
 # Build args for environment variables
 ARG REACT_APP_API_URL
