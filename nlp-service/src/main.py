@@ -59,6 +59,14 @@ async def save_to_backend(auction_data: Dict[str, Any], ai_score: float, score_b
     """Save processed auction to backend database."""
     try:
         # Prepare data for backend API
+        # Convert auction_round to int or None
+        auction_round = auction_data.get("auction_round")
+        if auction_round is not None:
+            try:
+                auction_round = int(auction_round) if auction_round != "" else None
+            except (ValueError, TypeError):
+                auction_round = None
+        
         backend_data = {
             "external_id": auction_data.get("external_id"),
             "title": auction_data.get("title", ""),
@@ -69,7 +77,7 @@ async def save_to_backend(auction_data: Dict[str, Any], ai_score: float, score_b
             "address": auction_data.get("address", ""),
             "base_price": auction_data.get("base_price"),
             "auction_date": auction_data.get("auction_date"),
-            "auction_round": str(auction_data.get("auction_round", "")),
+            "auction_round": auction_round,
             "court": auction_data.get("court", ""),
             "status": "ACTIVE",
             "ai_score": ai_score,

@@ -88,6 +88,15 @@ class PVPScraper:
                     indirizzo = item.get('indirizzo', {})
                     coordinate = indirizzo.get('coordinate', {})
                     
+                    # Convert auction_round to integer or None
+                    procedura = item.get('procedura')
+                    auction_round = None
+                    if procedura:
+                        try:
+                            auction_round = int(procedura)
+                        except (ValueError, TypeError):
+                            auction_round = None
+                    
                     auction_data = {
                         'external_id': str(item.get('id', '')),
                         'title': item.get('descLotto', ''),
@@ -101,7 +110,7 @@ class PVPScraper:
                         'price_text': str(item.get('prezzoBaseAsta', '')),
                         'base_price': float(item.get('prezzoBaseAsta', 0)) if item.get('prezzoBaseAsta') else None,
                         'auction_date': item.get('dataOraVendita', ''),
-                        'auction_round': item.get('procedura', ''),
+                        'auction_round': auction_round,
                         'court': item.get('tribunale', ''),
                         'scraped_at': datetime.utcnow().isoformat(),
                         'raw_data': item
