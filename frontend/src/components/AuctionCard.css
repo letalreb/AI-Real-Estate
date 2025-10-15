@@ -143,9 +143,19 @@
   color: #1b5e20;
 }
 
-.btn-full {
-  width: 100%;
+.auction-actions {
+  display: flex;
+  gap: 10px;
   margin-top: auto;
+}
+
+.auction-actions .btn {
+  flex: 1;
+  text-align: center;
+}
+
+.auction-actions .btn-primary {
+  flex: 1.5;
 }
 
 /* Responsive */
@@ -157,5 +167,13 @@
   .auction-prices {
     flex-direction: column;
     gap: 10px;
+  }
+
+  .auction-actions {
+    flex-direction: column;
+  }
+
+  .auction-actions .btn {
+    width: 100%;
   }
 }

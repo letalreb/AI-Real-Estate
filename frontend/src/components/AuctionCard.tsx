@@ -138,9 +138,22 @@ const AuctionCard: React.FC<AuctionCardProps> = ({ auction }) => {
         </div>
       )}
 
-      <Link to={`/auctions/${auction.id}`} className="btn btn-primary btn-full">
-        Vedi Dettagli
-      </Link>
+      <div className="auction-actions">
+        <Link to={`/auctions/${auction.id}`} className="btn btn-primary">
+          Vedi Dettagli
+        </Link>
+        {auction.source_url && (
+          <a 
+            href={auction.source_url} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="btn btn-outline"
+            onClick={(e) => e.stopPropagation()}
+          >
+            Annuncio Originale ↗
+          </a>
+        )}
+      </div>
     </div>
   );
 };
