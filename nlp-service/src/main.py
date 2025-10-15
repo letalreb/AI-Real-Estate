@@ -6,6 +6,8 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Dict, Any, Optional
 import structlog
+import aiohttp
+import os
 
 from .normalizer import normalize_auction_text
 from .ner_extractor import extract_entities
@@ -13,6 +15,7 @@ from .ranking_engine import calculate_ai_score
 from .embeddings import generate_embedding, store_in_qdrant
 
 logger = structlog.get_logger()
+BACKEND_URL = os.getenv("BACKEND_URL", "http://backend:8000")
 
 app = FastAPI(
     title="AI Real Estate NLP Service",
@@ -52,6 +55,58 @@ async def health_check():
     }
 
 
+async def save_to_backend(auction_data: Dict[str, Any], ai_score: float, score_breakdown: Dict[str, float], embedding_id: Optional[str]):
+    """Save processed auction to backend database."""
+    try:
+        # Prepare data for backend API
+        backend_data = {
+            "external_id": auction_data.get("external_id"),
+            "title": auction_data.get("title", ""),
+            "description": auction_data.get("description", ""),
+            "property_type": auction_data.get("property_type", "UNKNOWN"),
+            "city": auction_data.get("city", ""),
+            "province": auction_data.get("province", ""),
+            "address": auction_data.get("address", ""),
+            "base_price": auction_data.get("base_price"),
+            "auction_date": auction_data.get("auction_date"),
+            "auction_round": str(auction_data.get("auction_round", "")),
+            "court": auction_data.get("court", ""),
+            "status": "ACTIVE",
+            "ai_score": ai_score,
+            "score_breakdown": score_breakdown,
+            "source_url": auction_data.get("url", ""),
+            "raw_data": auction_data.get("raw_data", {}),
+            "embedding_id": embedding_id
+        }
+        
+        # Add coordinates if available
+        if auction_data.get("latitude") and auction_data.get("longitude"):
+            backend_data["latitude"] = auction_data["latitude"]
+            backend_data["longitude"] = auction_data["longitude"]
+        
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                f"{BACKEND_URL}/api/v1/auctions/scraper",
+                json=backend_data,
+                timeout=aiohttp.ClientTimeout(total=10)
+            ) as response:
+                if response.status in [200, 201]:
+                    logger.info("saved_to_backend", auction_id=auction_data.get("external_id"))
+                    return True
+                else:
+                    error_text = await response.text()
+                    logger.error("backend_save_failed", 
+                               status=response.status, 
+                               auction_id=auction_data.get("external_id"),
+                               error=error_text)
+                    return False
+    except Exception as e:
+        logger.error("backend_save_error", 
+                    auction_id=auction_data.get("external_id"), 
+                    error=str(e))
+        return False
+
+
 @app.post("/process", response_model=ProcessedAuction)
 async def process_auction(auction: AuctionInput):
     """
@@ -63,6 +118,7 @@ async def process_auction(auction: AuctionInput):
     3. Calculate AI ranking score
     4. Generate embeddings
     5. Store in vector database
+    6. Save to backend database
     """
     try:
         logger.info("processing_auction", auction_id=auction.external_id)
@@ -96,6 +152,9 @@ async def process_auction(auction: AuctionInput):
             )
         except Exception as e:
             logger.warning("embedding_failed", error=str(e))
+        
+        # Step 5: Save to backend database
+        await save_to_backend(normalized, ai_score, score_breakdown, embedding_id)
         
         logger.info(
             "auction_processed",

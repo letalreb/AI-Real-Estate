@@ -326,3 +326,70 @@ async def get_market_stats(
         city_distribution=city_dist,
         price_ranges=price_ranges
     )
+
+
+@router.post("/auctions/scraper", response_model=AuctionResponse, status_code=status.HTTP_201_CREATED)
+async def create_auction_from_scraper(
+    auction_data: dict,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Create or update an auction from scraper/NLP service.
+    This endpoint is used by the NLP service to save processed auctions.
+    """
+    try:
+        external_id = auction_data.get("external_id")
+        if not external_id:
+            raise HTTPException(status_code=400, detail="external_id is required")
+        
+        # Check if auction already exists
+        existing_query = select(Auction).where(Auction.external_id == external_id)
+        result = await db.execute(existing_query)
+        existing_auction = result.scalar_one_or_none()
+        
+        # Prepare coordinates if latitude and longitude are provided
+        coordinates = None
+        if auction_data.get("latitude") and auction_data.get("longitude"):
+            from geoalchemy2.elements import WKTElement
+            lat = auction_data["latitude"]
+            lon = auction_data["longitude"]
+            coordinates = f"SRID=4326;POINT({lon} {lat})"
+        
+        if existing_auction:
+            # Update existing auction
+            for key, value in auction_data.items():
+                if key not in ["latitude", "longitude"] and hasattr(existing_auction, key):
+                    setattr(existing_auction, key, value)
+            
+            if coordinates:
+                from geoalchemy2.elements import WKTElement
+                existing_auction.coordinates = WKTElement(coordinates, srid=4326)
+            
+            await db.commit()
+            await db.refresh(existing_auction)
+            
+            logger.info("auction_updated", auction_id=external_id)
+            return existing_auction
+        else:
+            # Create new auction
+            auction_dict = {
+                k: v for k, v in auction_data.items() 
+                if k not in ["latitude", "longitude"] and k in Auction.__table__.columns.keys()
+            }
+            
+            if coordinates:
+                from geoalchemy2.elements import WKTElement
+                auction_dict["coordinates"] = WKTElement(coordinates, srid=4326)
+            
+            new_auction = Auction(**auction_dict)
+            db.add(new_auction)
+            await db.commit()
+            await db.refresh(new_auction)
+            
+            logger.info("auction_created", auction_id=external_id)
+            return new_auction
+            
+    except Exception as e:
+        await db.rollback()
+        logger.error("create_auction_failed", error=str(e), external_id=auction_data.get("external_id"))
+        raise HTTPException(status_code=500, detail=f"Failed to create auction: {str(e)}")
