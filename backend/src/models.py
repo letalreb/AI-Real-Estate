@@ -6,6 +6,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from geoalchemy2 import Geometry
 from datetime import datetime
+from typing import Optional
 import enum
 
 Base = declarative_base()
@@ -100,6 +101,24 @@ class Auction(Base):
     
     # Vector embedding reference
     embedding_id = Column(String(100))  # Qdrant point ID
+    
+    @property
+    def latitude(self) -> Optional[float]:
+        """Extract latitude from PostGIS coordinates."""
+        if self.coordinates:
+            from geoalchemy2.shape import to_shape
+            point = to_shape(self.coordinates)
+            return point.y
+        return None
+    
+    @property
+    def longitude(self) -> Optional[float]:
+        """Extract longitude from PostGIS coordinates."""
+        if self.coordinates:
+            from geoalchemy2.shape import to_shape
+            point = to_shape(self.coordinates)
+            return point.x
+        return None
 
 
 class SearchPreference(Base):

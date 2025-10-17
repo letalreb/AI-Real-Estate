@@ -168,7 +168,7 @@ class PVPScraper:
 async def main():
     """Entry point for scraper."""
     async with PVPScraper() as scraper:
-        await scraper.run(max_pages=10)
+        await scraper.run(max_pages=100)  # Increased from 10 to 100 to get more auctions
 
 
 if __name__ == "__main__":

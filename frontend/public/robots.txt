@@ -1,0 +1,17 @@
+# robots.txt per AI Real Estate - Aste Immobiliari
+
+User-agent: *
+Allow: /
+
+# Ottimizzato per i motori di ricerca italiani
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+# Sitemap (da aggiornare con l'URL di produzione)
+Sitemap: https://airealestate.it/sitemap.xml
+
+# Crawl-delay per rispettare i server
+Crawl-delay: 1
