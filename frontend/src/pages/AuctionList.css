@@ -1,87 +1,346 @@
+/* ===================================
+   AUCTION LIST PAGE
+   =================================== */
+
 .auction-list-page {
-  padding: 40px 0;
+  min-height: 100vh;
+  background: linear-gradient(180deg, 
+    rgba(37, 99, 235, 0.02) 0%, 
+    rgba(255, 255, 255, 1) 40%
+  );
 }
 
-.page-header {
+/* ===================================
+   HERO SECTION
+   =================================== */
+
+.hero-section {
+  padding: 4rem 0 3rem;
   text-align: center;
-  margin-bottom: 40px;
 }
 
-.page-header h1 {
-  font-size: 36px;
-  color: #333;
-  margin-bottom: 10px;
+.hero-content {
+  max-width: 900px;
+  margin: 0 auto;
 }
 
-.page-subtitle {
-  font-size: 18px;
-  color: #666;
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(5, 150, 105, 0.1));
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  border-radius: 50px;
+  color: var(--primary-color);
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  animation: fadeInUp 0.6s ease-out;
 }
 
-.auction-grid {
+.hero-badge svg {
+  color: var(--accent-color);
+}
+
+.hero-title {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.03em;
+  animation: fadeInUp 0.6s ease-out 0.1s both;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-subtitle {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  line-height: 1.6;
+  color: var(--text-secondary);
+  max-width: 700px;
+  margin: 0 auto 3rem;
+  animation: fadeInUp 0.6s ease-out 0.2s both;
+}
+
+.hero-stats {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  padding: 2rem;
+  background: white;
+  border-radius: 20px;
+  box-shadow: var(--shadow-lg);
+  animation: fadeInUp 0.6s ease-out 0.3s both;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--primary-color);
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-divider {
+  width: 1px;
+  height: 40px;
+  background: var(--border-color);
+}
+
+/* ===================================
+   FILTER SECTION
+   =================================== */
+
+.filter-section {
+  padding: 2rem 0;
+}
+
+/* ===================================
+   AUCTIONS SECTION
+   =================================== */
+
+.auctions-section {
+  padding: 2rem 0 4rem;
+}
+
+.auctions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.section-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.results-count {
+  padding: 0.5rem 1rem;
+  background: var(--bg-secondary);
+  border-radius: 50px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* ===================================
+   AUCTIONS GRID
+   =================================== */
+
+.auctions-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 25px;
-  margin-bottom: 40px;
+  gap: 2rem;
+  margin-bottom: 3rem;
 }
 
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 20px;
+/* ===================================
+   LOADING SKELETON
+   =================================== */
+
+.loading-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 2rem;
 }
 
-.loading-container p {
-  margin-top: 20px;
-  color: #666;
-  font-size: 16px;
+.skeleton-card {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
 }
 
-.empty-state {
-  text-align: center;
-  padding: 80px 20px;
+.skeleton-image {
+  width: 100%;
+  height: 200px;
+  background: linear-gradient(
+    90deg,
+    var(--bg-secondary) 0%,
+    rgba(0, 0, 0, 0.03) 50%,
+    var(--bg-secondary) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }
 
-.empty-icon {
-  font-size: 64px;
-  margin-bottom: 20px;
+.skeleton-content {
+  padding: 1.5rem;
 }
 
-.empty-state h3 {
-  font-size: 24px;
-  color: #333;
-  margin-bottom: 10px;
+.skeleton-title,
+.skeleton-text {
+  height: 16px;
+  background: linear-gradient(
+    90deg,
+    var(--bg-secondary) 0%,
+    rgba(0, 0, 0, 0.03) 50%,
+    var(--bg-secondary) 100%
+  );
+  background-size: 200% 100%;
+  border-radius: 4px;
+  margin-bottom: 0.75rem;
+  animation: shimmer 1.5s infinite;
 }
 
-.empty-state p {
-  font-size: 16px;
-  color: #666;
+.skeleton-title {
+  height: 24px;
+  width: 80%;
 }
+
+.skeleton-text.short {
+  width: 60%;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ===================================
+   LOAD MORE
+   =================================== */
 
 .load-more-container {
-  text-align: center;
-  padding: 20px 0;
+  display: flex;
+  justify-content: center;
+  margin-top: 3rem;
 }
 
 .btn-lg {
-  padding: 15px 40px;
-  font-size: 16px;
+  padding: 1rem 2rem;
+  font-size: 1rem;
 }
 
-/* Responsive */
+/* ===================================
+   EMPTY STATE
+   =================================== */
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  animation: fadeIn 0.6s ease-out;
+}
+
+.empty-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1.5rem;
+  color: var(--text-tertiary);
+  opacity: 0.5;
+}
+
+.empty-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+}
+
+.empty-text {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  max-width: 400px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ===================================
+   ANIMATIONS
+   =================================== */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ===================================
+   RESPONSIVE
+   =================================== */
+
 @media (max-width: 768px) {
-  .auction-grid {
+  .hero-section {
+    padding: 3rem 0 2rem;
+  }
+
+  .hero-stats {
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem;
+  }
+
+  .stat-divider {
+    width: 60px;
+    height: 1px;
+  }
+
+  .auctions-grid {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 1.5rem;
   }
 
-  .page-header h1 {
-    font-size: 28px;
+  .auctions-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-section {
+    padding: 2rem 0 1.5rem;
   }
 
-  .page-subtitle {
-    font-size: 16px;
+  .hero-stats {
+    padding: 1rem;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+  }
+
+  .auctions-grid {
+    grid-template-columns: 1fr;
   }
 }

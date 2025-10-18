@@ -136,9 +136,12 @@
 }
 
 .detail-icon {
-  font-size: var(--font-size-lg);
   color: var(--primary-color);
   flex-shrink: 0;
+}
+
+.detail-text {
+  flex: 1;
 }
 
 .detail-item strong {
@@ -215,7 +218,7 @@
 }
 
 /* Action Buttons */
-.auction-card-actions {
+.auction-actions {
   display: flex;
   gap: var(--spacing-sm);
   margin-top: auto;
@@ -259,12 +262,14 @@
 }
 
 .btn-original {
-  background-color: var(--secondary-color);
-  color: var(--text-white);
+  background-color: transparent;
+  color: var(--secondary-color);
+  border: 2px solid var(--secondary-color);
 }
 
 .btn-original:hover {
-  background-color: var(--secondary-hover);
+  background-color: var(--secondary-color);
+  color: var(--text-white);
   transform: translateY(-2px);
   box-shadow: var(--shadow-lg);
 }
@@ -352,7 +357,7 @@
     font-size: var(--font-size-lg);
   }
 
-  .auction-card-actions {
+  .auction-actions {
     flex-direction: column;
     gap: 0.625rem;
   }

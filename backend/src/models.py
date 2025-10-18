@@ -105,20 +105,58 @@ class Auction(Base):
     @property
     def latitude(self) -> Optional[float]:
         """Extract latitude from PostGIS coordinates."""
-        if self.coordinates:
-            from geoalchemy2.shape import to_shape
-            point = to_shape(self.coordinates)
-            return point.y
-        return None
+        if self.coordinates is None:
+            return None
+        try:
+            import struct
+            from geoalchemy2.elements import WKBElement
+            
+            # Handle WKBElement type
+            coords_data = None
+            if isinstance(self.coordinates, WKBElement):
+                coords_data = bytes(self.coordinates.data)
+            elif isinstance(self.coordinates, bytes):
+                coords_data = self.coordinates
+            
+            if coords_data:
+                # PostGIS EWKB format: byte order (1) + type (4) + SRID (4) + X (8) + Y (8)
+                byte_order = '<' if coords_data[0] == 1 else '>'
+                y_offset = 9 + 8  # Skip header (9 bytes) + X coordinate (8 bytes)
+                latitude = struct.unpack(byte_order + 'd', coords_data[y_offset:y_offset+8])[0]
+                return float(latitude)
+            return None
+        except Exception as e:
+            import logging
+            logging.error(f"Error extracting latitude: {e}, type: {type(self.coordinates)}")
+            return None
     
     @property
     def longitude(self) -> Optional[float]:
         """Extract longitude from PostGIS coordinates."""
-        if self.coordinates:
-            from geoalchemy2.shape import to_shape
-            point = to_shape(self.coordinates)
-            return point.x
-        return None
+        if self.coordinates is None:
+            return None
+        try:
+            import struct
+            from geoalchemy2.elements import WKBElement
+            
+            # Handle WKBElement type
+            coords_data = None
+            if isinstance(self.coordinates, WKBElement):
+                coords_data = bytes(self.coordinates.data)
+            elif isinstance(self.coordinates, bytes):
+                coords_data = self.coordinates
+            
+            if coords_data:
+                # PostGIS EWKB format: byte order (1) + type (4) + SRID (4) + X (8) + Y (8)
+                byte_order = '<' if coords_data[0] == 1 else '>'
+                x_offset = 9  # Skip header (byte order + type + SRID)
+                longitude = struct.unpack(byte_order + 'd', coords_data[x_offset:x_offset+8])[0]
+                return float(longitude)
+            return None
+        except Exception as e:
+            import logging
+            logging.error(f"Error extracting longitude: {e}, type: {type(self.coordinates)}")
+            return None
 
 
 class SearchPreference(Base):

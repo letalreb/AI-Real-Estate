@@ -16,5 +16,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Run scraper
-CMD ["python", "-m", "src.pvp_scraper"]
+# Run unified scraper (coordinates multiple sources)
+CMD ["python", "-m", "src.unified_scraper"]

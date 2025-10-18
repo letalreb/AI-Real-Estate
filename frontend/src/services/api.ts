@@ -13,7 +13,9 @@ import {
   MarketStats
 } from '../types';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+// Get API URL from environment or default to localhost
+// In production/Docker, this should be set via VITE_API_URL env variable
+const API_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
 
 class ApiClient {
   private client: AxiosInstance;

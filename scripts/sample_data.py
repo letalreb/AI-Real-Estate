@@ -13,7 +13,7 @@ from sqlalchemy import select
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.database import AsyncSessionLocal
-from src.models import Auction, PropertyType, AuctionStatus, User
+from src.models import Auction, PropertyType, AuctionStatus, User, Notification
 from src.auth import get_password_hash
 from src.config import settings
 
@@ -112,8 +112,8 @@ def generate_auction_data(index: int) -> dict:
         "city": city_data["name"],
         "province": city_data["province"],
         "address": f"Via {random.choice(['Roma', 'Milano', 'Venezia', 'Garibaldi'])} {random.randint(1, 200)}",
-        "latitude": lat,
-        "longitude": lon,
+        "lat": lat,
+        "lon": lon,
         "surface_sqm": surface,
         "rooms": rooms,
         "bathrooms": bathrooms,
@@ -142,7 +142,7 @@ def generate_auction_data(index: int) -> dict:
 
 async def create_sample_data(num_auctions: int = 50):
     """Create sample auction data in database."""
-    print(f"Creating {num_auctions} sample auctions...")
+    print(f"🏠 Creating {num_auctions} sample auctions...")
     
     async with AsyncSessionLocal() as session:
         # Create admin user if not exists
@@ -152,7 +152,7 @@ async def create_sample_data(num_auctions: int = 50):
         admin_user = result.scalar_one_or_none()
         
         if not admin_user:
-            print(f"Creating admin user: {settings.ADMIN_EMAIL}")
+            print(f"👤 Creating admin user: {settings.ADMIN_EMAIL}")
             admin_user = User(
                 email=settings.ADMIN_EMAIL,
                 hashed_password=get_password_hash(settings.ADMIN_PASSWORD),
@@ -160,8 +160,53 @@ async def create_sample_data(num_auctions: int = 50):
                 is_admin=True
             )
             session.add(admin_user)
+            await session.flush()
+        
+        # Create sample test users
+        test_users = [
+            {
+                "email": "mario.rossi@example.it",
+                "password": "password123",
+                "is_admin": False
+            },
+            {
+                "email": "lucia.bianchi@example.it",
+                "password": "password123",
+                "is_admin": False
+            },
+            {
+                "email": "giuseppe.verdi@example.it",
+                "password": "password123",
+                "is_admin": False
+            }
+        ]
+        
+        created_users = [admin_user]
+        for user_data in test_users:
+            result = await session.execute(
+                select(User).where(User.email == user_data["email"])
+            )
+            existing_user = result.scalar_one_or_none()
+            
+            if not existing_user:
+                print(f"👤 Creating test user: {user_data['email']}")
+                new_user = User(
+                    email=user_data["email"],
+                    hashed_password=get_password_hash(user_data["password"]),
+                    is_active=True,
+                    is_admin=user_data["is_admin"]
+                )
+                session.add(new_user)
+                await session.flush()
+                created_users.append(new_user)
+            else:
+                created_users.append(existing_user)
+        
+        await session.commit()
+        print(f"✅ Created {len(created_users)} users")
         
         # Create sample auctions
+        created_auctions = []
         for i in range(1, num_auctions + 1):
             auction_data = generate_auction_data(i)
             
@@ -174,22 +219,106 @@ async def create_sample_data(num_auctions: int = 50):
             if not existing:
                 # Create point geometry from lat/lon
                 from geoalchemy2 import WKTElement
-                point = WKTElement(f"POINT({auction_data['longitude']} {auction_data['latitude']})", srid=4326)
+                point = WKTElement(f"POINT({auction_data['lon']} {auction_data['lat']})", srid=4326)
                 
+                # Remove lat/lon and add coordinates
+                lat = auction_data.pop('lat')
+                lon = auction_data.pop('lon')
                 auction_data["coordinates"] = point
+                
                 auction = Auction(**auction_data)
                 session.add(auction)
+                created_auctions.append(auction)
                 
                 if i % 10 == 0:
-                    print(f"Created {i}/{num_auctions} auctions...")
+                    print(f"🏘️  Created {i}/{num_auctions} auctions...")
         
         await session.commit()
-        print("✅ Sample data created successfully!")
+        print(f"✅ Created {len(created_auctions)} auctions")
+        
+        # Create sample notifications for test users
+        notification_templates = [
+            "🎯 Nuova asta corrispondente alle tue preferenze: {property} in {city}",
+            "⭐ Asta ad alto punteggio AI ({score}) trovata: {property}",
+            "💰 Prezzo ridotto del {discount}% per {property} in {city}",
+            "📅 Asta in scadenza tra 48 ore: {property}",
+            "🔔 Aggiornamento: {property} - Nuova data d'asta",
+            "✨ Occasione imperdibile: {property} a {price}€",
+        ]
+        
+        created_notifications = 0
+        for user in created_users[1:]:  # Skip admin
+            # Create 3-8 notifications per user
+            num_notifications = random.randint(3, 8)
+            
+            for _ in range(num_notifications):
+                if not created_auctions:
+                    break
+                    
+                auction = random.choice(created_auctions)
+                template = random.choice(notification_templates)
+                
+                discount = 0
+                if auction.estimated_value and auction.base_price:
+                    discount = round((1 - auction.base_price / auction.estimated_value) * 100)
+                
+                message = template.format(
+                    property=auction.property_type.value,
+                    city=auction.city,
+                    score=auction.ai_score,
+                    discount=discount,
+                    price=f"{auction.base_price:,.0f}"
+                )
+                
+                # Random sent_at in last 7 days
+                sent_at = datetime.utcnow() - timedelta(days=random.randint(0, 7))
+                
+                notification = Notification(
+                    user_id=user.id,
+                    auction_id=auction.id,
+                    type="new_auction",
+                    title=f"Nuova asta: {auction.title}",
+                    message=message,
+                    is_read=random.random() < 0.3,  # 30% read
+                    sent_at=sent_at
+                )
+                session.add(notification)
+                created_notifications += 1
+        
+        await session.commit()
+        print(f"✅ Created {created_notifications} notifications")
         
         # Print summary
+        print("\n" + "="*60)
+        print("📊 DATABASE SUMMARY")
+        print("="*60)
+        
         result = await session.execute(select(Auction))
-        total = len(result.scalars().all())
-        print(f"\nTotal auctions in database: {total}")
+        total_auctions = len(result.scalars().all())
+        print(f"🏠 Total auctions: {total_auctions}")
+        
+        result = await session.execute(select(User))
+        total_users = len(result.scalars().all())
+        print(f"👥 Total users: {total_users}")
+        
+        result = await session.execute(select(Notification))
+        total_notifications = len(result.scalars().all())
+        print(f"🔔 Total notifications: {total_notifications}")
+        
+        print("\n" + "="*60)
+        print("👤 TEST USER CREDENTIALS")
+        print("="*60)
+        print("📧 Email: mario.rossi@example.it")
+        print("🔑 Password: password123")
+        print("\n📧 Email: lucia.bianchi@example.it")
+        print("🔑 Password: password123")
+        print("\n📧 Email: giuseppe.verdi@example.it")
+        print("🔑 Password: password123")
+        print("="*60)
+        print("\n✨ Sample data creation completed successfully!")
+        print(f"🌐 Frontend: http://localhost:3001/")
+        print(f"🔧 Backend API: http://localhost:8000/api/v1/docs")
+        print("="*60 + "\n")
 
 
 async def main():

@@ -1,6 +1,6 @@
 import { WebSocketMessage } from '../types';
 
-const WS_URL = process.env.REACT_APP_WS_URL || 'ws://localhost:8000';
+const WS_URL = (import.meta as any).env?.VITE_WS_URL || 'ws://localhost:8000';
 
 class WebSocketService {
   private ws: WebSocket | null = null;
